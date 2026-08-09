@@ -19,22 +19,21 @@ A server is required (the apps `fetch` the JSON data files).
 | Games | `data/games.json`, fetched from the jsDelivr mirror of `bubbls/ugs-singlefile` |
 | Movies | https://popcornmovies.io/ |
 | Soundboard | SoundboardMax, Realm of Darkness, iMyFone (tabs) |
-| Music | `data/media.json` → `music` |
-| Settings | wallpaper URL + clock format, saved in `localStorage` |
+| Music | three Google Drive folders + a built-in audio player |
+| Blooket | https://blooketbot.schoolcheats.net/ |
+| Panic | closes the tab, or navigates to the panic URL if the browser refuses |
+| Settings | wallpaper URL, clock format, panic URL — saved in `localStorage` |
 
-## Adding music
+## Music
 
-Edit `data/media.json`:
-
-```json
-{ "music": [{ "title": "Example Song", "artist": "Someone", "url": "https://…" }] }
-```
-
-Each entry opens in a Player window (an iframe pointing at `url`).
+The Drive tabs use `embeddedfolderview`, which only renders folders shared as "anyone with the link".
+The Player tab streams a pasted URL (Drive `file/d/…` links are rewritten to their direct-download form)
+or plays audio files picked from the device.
 
 ## External sites
 
-Sites that send `X-Frame-Options` / `frame-ancestors` (popcornmovies.io, filme.imyfone.com) cannot be
+Sites that send `X-Frame-Options` / `frame-ancestors` (popcornmovies.io, filme.imyfone.com,
+blooketbot.schoolcheats.net) cannot be
 embedded in an iframe by any page. Those windows show a launch card that opens the site in a new tab;
 the rest render inline. Mark one in `js/apps.js` with `embeddable: false`.
 

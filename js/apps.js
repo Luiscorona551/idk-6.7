@@ -16,6 +16,7 @@ const store = {
   }
 };
 
+const PANIC_URL = 'https://classroom.google.com/';
 const DEFAULT_WALLPAPER = 'https://plain-wnam-prod-public.komododecks.com/202608/09/2mq0HYHmjO3qexTDZY9G/image.png';
 
 function applyWallpaper(url) {
@@ -81,6 +82,101 @@ function externalSite(url, label, { embeddable = true } = {}) {
     launch
   ]));
   return root;
+}
+
+function tabbedApp(tabs) {
+  const root = el('div', { className: 'tabbed' });
+  const bar = el('div', { className: 'toolbar' });
+  const body = el('div', { className: 'tab-body' });
+  root.append(bar, body);
+
+  const buttons = tabs.map((tab, index) => {
+    const btn = el('button', { className: 'btn tab', type: 'button', textContent: tab.title });
+    btn.addEventListener('click', () => {
+      buttons.forEach(other => other.classList.remove('active'));
+      btn.classList.add('active');
+      body.replaceChildren(tab.render());
+    });
+    if (index === 0) btn.classList.add('active');
+    bar.append(btn);
+    return btn;
+  });
+
+  body.append(tabs[0].render());
+  return root;
+}
+
+// Drive blocks the normal UI in an iframe, but the embedded folder view renders
+// fine for anyone-with-the-link folders.
+function driveFolder(id, label) {
+  const root = el('div', { className: 'site-frame' });
+  const shareURL = `https://drive.google.com/drive/folders/${id}`;
+
+  const bar = el('div', { className: 'toolbar' }, [
+    el('span', { className: 'count', textContent: label }),
+    el('span', { style: 'flex:1' })
+  ]);
+  const openTab = el('button', { className: 'btn tab', type: 'button', textContent: 'Open in Drive' });
+  openTab.addEventListener('click', () => window.open(shareURL, '_blank', 'noopener'));
+  bar.append(openTab);
+
+  root.append(bar, el('iframe', {
+    src: `https://drive.google.com/embeddedfolderview?id=${id}#grid`
+  }));
+  return root;
+}
+
+function audioPlayer() {
+  const root = el('div', { className: 'app player-app' });
+  const audio = el('audio', { controls: true, className: 'audio' });
+  const now = el('p', { className: 'now-playing', textContent: 'Nothing loaded yet.' });
+
+  const url = el('input', { className: 'field', type: 'url', placeholder: 'Paste an audio URL or Drive file link' });
+  const play = el('button', { className: 'btn', type: 'button', textContent: 'Play' });
+  play.addEventListener('click', () => {
+    const value = url.value.trim();
+    if (!value) return;
+    audio.src = driveDirectURL(value);
+    audio.play().catch(() => { now.textContent = 'That link could not be played directly.'; });
+    now.textContent = value;
+  });
+
+  const picker = el('input', { type: 'file', accept: 'audio/*', multiple: true, className: 'field' });
+  const queue = el('div', { className: 'tile-grid' });
+  picker.addEventListener('change', () => {
+    queue.replaceChildren();
+    Array.from(picker.files).forEach(file => {
+      const tile = el('button', { className: 'tile', type: 'button', textContent: file.name });
+      tile.addEventListener('click', () => {
+        audio.src = URL.createObjectURL(file);
+        audio.play();
+        now.textContent = file.name;
+      });
+      queue.append(tile);
+    });
+  });
+
+  root.append(
+    el('h2', { textContent: 'Player' }),
+    audio,
+    now,
+    el('div', { className: 'settings-row' }, [
+      el('label', { textContent: 'Stream a link' }),
+      el('div', { style: 'display:flex; gap:8px;' }, [url, play])
+    ]),
+    el('div', { className: 'settings-row' }, [
+      el('label', { textContent: 'Or play files from this device' }),
+      picker
+    ]),
+    queue
+  );
+  return root;
+}
+
+// Turn a Drive share link into something an <audio> element can stream.
+function driveDirectURL(value) {
+  const match = value.match(/drive\.google\.com\/file\/d\/([^/]+)/) || value.match(/[?&]id=([^&]+)/);
+  return match ? `https://drive.google.com/uc?export=download&id=${match[1]}` : value;
 }
 
 function listApp({ items, placeholder, empty, onOpen, subtitle }) {
@@ -179,25 +275,10 @@ const APPS = {
         { title: 'iMyFone Soundboards', url: 'https://filme.imyfone.com/soundboards/?search=csgo', embeddable: false }
       ];
 
-      const root = el('div', { className: 'tabbed' });
-      const tabs = el('div', { className: 'toolbar' });
-      const body = el('div', { className: 'tab-body' });
-      root.append(tabs, body);
-
-      const buttons = sites.map((site, index) => {
-        const btn = el('button', { className: 'btn tab', type: 'button', textContent: site.title });
-        btn.addEventListener('click', () => {
-          buttons.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          body.replaceChildren(externalSite(site.url, site.title, { embeddable: site.embeddable !== false }));
-        });
-        if (index === 0) btn.classList.add('active');
-        tabs.append(btn);
-        return btn;
-      });
-
-      body.append(externalSite(sites[0].url, sites[0].title, { embeddable: sites[0].embeddable !== false }));
-      return root;
+      return tabbedApp(sites.map(site => ({
+        title: site.title,
+        render: () => externalSite(site.url, site.title, { embeddable: site.embeddable !== false })
+      })));
     }
   },
 
@@ -205,23 +286,46 @@ const APPS = {
     title: 'Music',
     glyph: '🎵',
     desktop: true,
-    width: 760,
-    height: 560,
-    async render() {
-      const media = await loadJSON('data/media.json');
-      const items = (media.music || []).map(entry => ({
-        ...entry,
-        search: `${entry.title} ${entry.artist || ''}`.toLowerCase()
+    width: 1000,
+    height: 660,
+    render() {
+      const folders = [
+        { title: 'Library 1', id: '1P6Vco6iRavlUZy___wDNXNjYHoPWORUH' },
+        { title: 'Library 2', id: '1Q-m97t5_WKaSQzj8FYB3H0GYLsnnaReb' },
+        { title: 'Library 3', id: '1SLPMQ8c9PZInb8xviLJmyiGXXh_FYFa0' }
+      ];
+
+      const tabs = folders.map(folder => ({
+        title: folder.title,
+        render: () => driveFolder(folder.id, folder.title)
       }));
-      return listApp({
-        items,
-        placeholder: 'Search music…',
-        empty: 'No music yet. Add tracks to <code>data/media.json</code>.',
-        subtitle: item => item.artist || '',
-        onOpen(item) {
-          OS.open('player', { title: item.title, src: item.url });
-        }
-      });
+      tabs.push({ title: 'Player', render: audioPlayer });
+
+      return tabbedApp(tabs);
+    }
+  },
+
+  cheats: {
+    title: 'Blooket',
+    glyph: '<span class="binary">01<br>10</span>',
+    desktop: true,
+    width: 1000,
+    height: 660,
+    render() {
+      return externalSite('https://blooketbot.schoolcheats.net/', 'Blooket Bot', { embeddable: false });
+    }
+  },
+
+  panic: {
+    title: 'Panic — close this tab',
+    glyph: '🛑',
+    desktop: false,
+    danger: true,
+    action() {
+      // window.close() only works for script-opened tabs; fall back to navigating away.
+      window.open('', '_self');
+      window.close();
+      window.location.replace(store.get('panicURL', PANIC_URL) || PANIC_URL);
     }
   },
 
@@ -240,11 +344,18 @@ const APPS = {
         value: store.get('wallpaper', DEFAULT_WALLPAPER) || ''
       });
       const clock24 = el('input', { type: 'checkbox', checked: store.get('clock24', false) });
+      const panic = el('input', {
+        className: 'field',
+        type: 'url',
+        placeholder: PANIC_URL,
+        value: store.get('panicURL', PANIC_URL) || ''
+      });
 
       const save = el('button', { className: 'btn', type: 'button', textContent: 'Apply' });
       save.addEventListener('click', () => {
         store.set('wallpaper', input.value.trim());
         store.set('clock24', clock24.checked);
+        store.set('panicURL', panic.value.trim());
         applyWallpaper(input.value.trim());
         OS.tickClock();
       });
@@ -265,6 +376,10 @@ const APPS = {
         el('div', { className: 'settings-row' }, [
           el('label', { textContent: '24-hour clock' }),
           clock24
+        ]),
+        el('div', { className: 'settings-row' }, [
+          el('label', { textContent: 'Panic button goes to' }),
+          panic
         ]),
         el('div', { style: 'display:flex; gap:8px;' }, [save, reset])
       );

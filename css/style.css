@@ -99,6 +99,20 @@ html, body {
 
 .dock-btn:hover { transform: translateY(-6px) scale(1.1); background: rgba(255, 255, 255, 0.12); }
 .dock-btn.running { background: rgba(89, 134, 218, 0.35); }
+.dock-btn.danger:hover { background: rgba(238, 95, 86, 0.35); }
+.binary {
+  display: inline-block;
+  font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 1px;
+  color: #7ef6a8;
+}
+.desktop-icon .binary { font-size: 17px; }
+
+.player-app .audio { width: 100%; margin-bottom: 8px; }
+.player-app .now-playing { margin: 0 0 16px; font-size: 13px; overflow-wrap: anywhere; }
 
 .window {
   position: absolute;

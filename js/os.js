@@ -73,6 +73,11 @@ const OS = (() => {
     const app = APPS[appId];
     if (!app) return;
 
+    if (app.action) {
+      app.action();
+      return;
+    }
+
     if (!app.multi && open.has(appId)) {
       focus(open.get(appId));
       return;
@@ -151,6 +156,7 @@ const OS = (() => {
       btn.type = 'button';
       btn.dataset.app = id;
       btn.title = app.title;
+      if (app.danger) btn.classList.add('danger');
       btn.innerHTML = app.glyph;
       btn.addEventListener('click', () => launch(id));
       dock.append(btn);
