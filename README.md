@@ -1,16 +1,18 @@
 # UGS Desktop
 
-A static, desktop-style front end for the UGS file collection: wallpaper, desktop icons, a dock,
-and draggable windows. Nothing loads until you click an app.
+A desktop-style front end for the UGS file collection: wallpaper, desktop icons, a dock,
+and draggable windows. Nothing loads until you click an app. A small Node server serves the
+page and runs an Ultraviolet proxy.
 
 ## Run locally
 
 ```bash
-python3 -m http.server 8000
-# open http://localhost:8000
+npm install
+npm start          # PORT=8000 npm start to change the port
+# open http://localhost:8080
 ```
 
-A server is required (the apps `fetch` the JSON data files).
+The UI also works from any static host (`python3 -m http.server`), just without the Proxy app.
 
 ## Apps
 
@@ -21,6 +23,7 @@ A server is required (the apps `fetch` the JSON data files).
 | Soundboard | SoundboardMax, Realm of Darkness, iMyFone (tabs) |
 | Music | three Google Drive folders + a built-in audio player |
 | Blooket | https://blooketbot.schoolcheats.net/ |
+| Proxy | Ultraviolet + Wisp, served by `server.js` |
 | Panic | closes the tab, or navigates to the panic URL if the browser refuses |
 | Settings | wallpaper URL, clock format, panic URL — saved in `localStorage` |
 
@@ -34,10 +37,24 @@ or plays audio files picked from the device.
 
 Sites that send `X-Frame-Options` / `frame-ancestors` (popcornmovies.io, filme.imyfone.com,
 blooketbot.schoolcheats.net) cannot be
-embedded in an iframe by any page. Those windows show a launch card that opens the site in a new tab;
-the rest render inline. Mark one in `js/apps.js` with `embeddable: false`.
+embedded in an iframe by any page. Those windows show a launch card that opens the site in a new tab —
+plus an "Open here through the proxy" button when the backend is running, since Ultraviolet strips those
+headers. The rest render inline. Mark one in `js/apps.js` with `embeddable: false`.
+
+## Proxy
+
+`server.js` (Express) serves the site plus the Ultraviolet, BareMux and Epoxy assets, and routes
+WebSocket upgrades on `/wisp/` to the Wisp server. `js/proxy.js` registers the Ultraviolet service
+worker at `/uv/service/` and points BareMux at `wss://<host>/wisp/`.
+
+Service workers need a secure context, so the proxy only works over HTTPS or on `localhost`.
+An open proxy will relay anything anyone points at it — put it behind auth, a rate limiter or a
+private URL if it is reachable from the internet.
 
 ## Deploying
 
-Any static host works — GitHub Pages, Netlify, Cloudflare Pages. Push the folder and point the host
-at the repository root.
+Needs a Node host for the proxy. `render.yaml` deploys it on Render as-is (`npm install` / `npm start`,
+binds `$PORT`); the `Dockerfile` covers Railway, Fly, or anything else that takes a container.
+
+Without the proxy, the folder still works on any static host (GitHub Pages, Netlify, Cloudflare Pages);
+the Proxy app then reports that the backend is unavailable.

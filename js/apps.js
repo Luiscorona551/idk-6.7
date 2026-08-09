@@ -77,9 +77,24 @@ function externalSite(url, label, { embeddable = true } = {}) {
 
   const launch = el('button', { className: 'btn', type: 'button', textContent: `Open ${label}` });
   launch.addEventListener('click', openTab);
+
+  const viaProxy = el('button', { className: 'btn', type: 'button', textContent: 'Open here through the proxy' });
+  viaProxy.hidden = true;
+  viaProxy.addEventListener('click', async () => {
+    viaProxy.textContent = 'Connecting…';
+    try {
+      const frame = el('iframe', { src: await PROXY.encode(url), allow: 'autoplay; fullscreen; clipboard-write' });
+      root.replaceChildren(bar, frame);
+    } catch (err) {
+      viaProxy.textContent = err.message;
+    }
+  });
+  PROXY.backendAvailable().then(ok => { viaProxy.hidden = !ok; });
+
   root.append(bar, el('div', { className: 'empty-state blocked' }, [
     el('p', { textContent: `${label} blocks being embedded in another page, so it opens in its own tab.` }),
-    launch
+    launch,
+    viaProxy
   ]));
   return root;
 }
@@ -313,6 +328,53 @@ const APPS = {
     height: 660,
     render() {
       return externalSite('https://blooketbot.schoolcheats.net/', 'Blooket Bot', { embeddable: false });
+    }
+  },
+
+  proxy: {
+    title: 'Proxy',
+    glyph: '🌐',
+    desktop: true,
+    width: 1040,
+    height: 680,
+    async render() {
+      const root = el('div', { className: 'site-frame' });
+      const frame = el('iframe', { allow: 'autoplay; fullscreen; clipboard-write' });
+      const status = el('span', { className: 'count', textContent: 'Ready' });
+
+      const bar = el('div', { className: 'toolbar' });
+      const url = el('input', { className: 'field', type: 'text', placeholder: 'Search or enter a URL' });
+      const go = el('button', { className: 'btn tab', type: 'button', textContent: 'Go' });
+      bar.append(url, go, status);
+
+      if (!await PROXY.backendAvailable()) {
+        root.append(bar, emptyState(
+          'The proxy backend is not running.<br>Start the site with <code>npm start</code> ' +
+          '(or deploy it to a Node host) instead of opening the files directly.'
+        ));
+        url.disabled = true;
+        go.disabled = true;
+        return root;
+      }
+
+      const navigate = async () => {
+        if (!url.value.trim()) return;
+        status.textContent = 'Connecting…';
+        try {
+          frame.src = await PROXY.encode(url.value);
+          status.textContent = 'Connected';
+        } catch (err) {
+          status.textContent = err.message;
+        }
+      };
+
+      go.addEventListener('click', navigate);
+      url.addEventListener('keydown', event => {
+        if (event.key === 'Enter') navigate();
+      });
+
+      root.append(bar, frame);
+      return root;
     }
   },
 
