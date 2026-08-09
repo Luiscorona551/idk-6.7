@@ -151,7 +151,7 @@ const OS = (() => {
       btn.type = 'button';
       btn.dataset.app = id;
       btn.title = app.title;
-      btn.textContent = app.glyph;
+      btn.innerHTML = app.glyph;
       btn.addEventListener('click', () => launch(id));
       dock.append(btn);
     });

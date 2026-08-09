@@ -16,7 +16,7 @@ const store = {
   }
 };
 
-const DEFAULT_WALLPAPER = 'https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&w=2400&q=80';
+const DEFAULT_WALLPAPER = 'https://plain-wnam-prod-public.komododecks.com/202608/09/2mq0HYHmjO3qexTDZY9G/image.png';
 
 function applyWallpaper(url) {
   const value = url ? `url("${url}")` : 'linear-gradient(135deg, #16224a, #2b1748)';
@@ -54,6 +54,33 @@ function el(tag, props = {}, children = []) {
 
 function emptyState(message) {
   return el('div', { className: 'empty-state', innerHTML: message });
+}
+
+// Sites that send X-Frame-Options / frame-ancestors cannot render inside an
+// iframe at all, so they get a launch card instead of a permanently broken frame.
+function externalSite(url, label, { embeddable = true } = {}) {
+  const root = el('div', { className: 'site-frame' });
+  const openTab = () => window.open(url, '_blank', 'noopener');
+
+  const bar = el('div', { className: 'toolbar' }, [
+    el('span', { className: 'count', textContent: new URL(url).hostname })
+  ]);
+  const popOut = el('button', { className: 'btn tab', type: 'button', textContent: 'Open in new tab' });
+  popOut.addEventListener('click', openTab);
+  bar.append(el('span', { style: 'flex:1' }), popOut);
+
+  if (embeddable) {
+    root.append(bar, el('iframe', { src: url, allow: 'autoplay; fullscreen; clipboard-write' }));
+    return root;
+  }
+
+  const launch = el('button', { className: 'btn', type: 'button', textContent: `Open ${label}` });
+  launch.addEventListener('click', openTab);
+  root.append(bar, el('div', { className: 'empty-state blocked' }, [
+    el('p', { textContent: `${label} blocks being embedded in another page, so it opens in its own tab.` }),
+    launch
+  ]));
+  return root;
 }
 
 function listApp({ items, placeholder, empty, onOpen, subtitle }) {
@@ -97,7 +124,7 @@ function listApp({ items, placeholder, empty, onOpen, subtitle }) {
 const APPS = {
   games: {
     title: 'Games',
-    glyph: '🎮',
+    glyph: '<img src="assets/ugs-icon.jpeg" alt="">',
     desktop: true,
     width: 900,
     height: 620,
@@ -132,23 +159,45 @@ const APPS = {
     title: 'Movies',
     glyph: '🎬',
     desktop: true,
-    width: 860,
-    height: 600,
-    async render() {
-      const media = await loadJSON('data/media.json');
-      const items = (media.movies || []).map(entry => ({
-        ...entry,
-        search: `${entry.title} ${entry.year || ''} ${entry.tags || ''}`.toLowerCase()
-      }));
-      return listApp({
-        items,
-        placeholder: 'Search movies…',
-        empty: 'No movies yet. Add them to <code>data/media.json</code>.',
-        subtitle: item => item.year || '',
-        onOpen(item) {
-          OS.open('player', { title: item.title, src: item.url });
-        }
+    width: 1000,
+    height: 660,
+    render() {
+      return externalSite('https://popcornmovies.io/', 'Popcorn Movies', { embeddable: false });
+    }
+  },
+
+  soundboard: {
+    title: 'Soundboard',
+    glyph: '🔊',
+    desktop: true,
+    width: 1000,
+    height: 660,
+    render() {
+      const sites = [
+        { title: 'SoundboardMax', url: 'https://soundboardmax.com/' },
+        { title: 'Realm of Darkness', url: 'https://www.realmofdarkness.net/sb/soundboards/' },
+        { title: 'iMyFone Soundboards', url: 'https://filme.imyfone.com/soundboards/?search=csgo', embeddable: false }
+      ];
+
+      const root = el('div', { className: 'tabbed' });
+      const tabs = el('div', { className: 'toolbar' });
+      const body = el('div', { className: 'tab-body' });
+      root.append(tabs, body);
+
+      const buttons = sites.map((site, index) => {
+        const btn = el('button', { className: 'btn tab', type: 'button', textContent: site.title });
+        btn.addEventListener('click', () => {
+          buttons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          body.replaceChildren(externalSite(site.url, site.title, { embeddable: site.embeddable !== false }));
+        });
+        if (index === 0) btn.classList.add('active');
+        tabs.append(btn);
+        return btn;
       });
+
+      body.append(externalSite(sites[0].url, sites[0].title, { embeddable: sites[0].embeddable !== false }));
+      return root;
     }
   },
 
