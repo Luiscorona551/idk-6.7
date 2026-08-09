@@ -12,7 +12,8 @@ npm start          # PORT=8000 npm start to change the port
 # open http://localhost:8080
 ```
 
-The UI also works from any static host (`python3 -m http.server`), just without the Proxy app.
+The UI also works from any static host (`python3 -m http.server`), just without the Proxy app,
+the Chat app, and the server-side half of the setup gate.
 
 ## Apps
 
@@ -27,6 +28,21 @@ The UI also works from any static host (`python3 -m http.server`), just without 
 | Chat | rooms over WebSockets (`chat.js`), no account needed |
 | Panic | closes the tab, or navigates to the panic URL if the browser refuses |
 | Settings | wallpaper URL, clock format, panic URL — saved in `localStorage` |
+
+## Setup gate
+
+`index.html` is the IDK 6.7 setup flow; the desktop lives at `desktop.html`. `setup-gate.js` refuses
+every request except the setup page and its assets until `POST /api/setup` is given the product key,
+which sets a signed, HttpOnly session cookie — so the games, the proxy and the chat sockets are
+unreachable without finishing setup, not just hidden.
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `SETUP_KEY` | `IDK67-PRO-2026` | the product key |
+| `SESSION_SECRET` | random per boot | signs session cookies; set it so restarts don't log everyone out |
+
+On a static host there is no server to enforce this, so the key check falls back to a hash comparison
+in the browser — cosmetic only.
 
 ## Music
 
