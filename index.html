@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UGS</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="desktop">
+    <div id="clock">
+      <div id="clock-time">--:--</div>
+      <div id="clock-date"></div>
+    </div>
+
+    <div id="icons"></div>
+    <div id="windows"></div>
+
+    <div id="dock"></div>
+  </div>
+
+  <template id="window-template">
+    <section class="window">
+      <header class="titlebar">
+        <span class="title"></span>
+        <div class="controls">
+          <button class="ctrl min" title="Minimize">&#8211;</button>
+          <button class="ctrl max" title="Maximize">&#9723;</button>
+          <button class="ctrl close" title="Close">&times;</button>
+        </div>
+      </header>
+      <div class="content"></div>
+      <div class="resizer"></div>
+    </section>
+  </template>
+
+  <script src="js/apps.js"></script>
+  <script src="js/os.js"></script>
+</body>
+</html>
