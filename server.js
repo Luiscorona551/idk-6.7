@@ -6,6 +6,7 @@ import { server as wisp } from '@mercuryworkshop/wisp-js/server';
 import { createRequire } from 'node:module';
 import { uvPath } from '@titaniumnetwork-dev/ultraviolet';
 import { baremuxPath } from '@mercuryworkshop/bare-mux/node';
+import { chat } from './chat.js';
 
 const require = createRequire(import.meta.url);
 // resolve() lands on the Node build (lib/); the browser build lives in dist/.
@@ -22,7 +23,7 @@ app.use('/uv/uv.config.js', express.static(join(root, 'public/uv/uv.config.js'))
 app.use('/uv/', express.static(uvPath));
 app.use('/baremux/', express.static(baremuxPath));
 app.use('/epoxy/', express.static(epoxyPath));
-const PRIVATE = /^\/(node_modules|public|package(-lock)?\.json|server\.js|Dockerfile|render\.yaml)/;
+const PRIVATE = /^\/(node_modules|public|package(-lock)?\.json|server\.js|chat\.js|Dockerfile|render\.yaml)/;
 app.use((req, res, next) => (PRIVATE.test(req.path) ? res.sendStatus(404) : next()));
 app.use(express.static(root, { extensions: ['html'], dotfiles: 'ignore' }));
 
@@ -31,6 +32,8 @@ const server = createServer(app);
 server.on('upgrade', (req, socket, head) => {
   if (req.url.startsWith('/wisp/')) {
     wisp.routeRequest(req, socket, head);
+  } else if (req.url.startsWith('/chat')) {
+    chat.handleUpgrade(req, socket, head, ws => chat.emit('connection', ws, req));
   } else {
     socket.destroy();
   }

@@ -378,6 +378,112 @@ const APPS = {
     }
   },
 
+  chat: {
+    title: 'Chat',
+    glyph: '💬',
+    desktop: true,
+    width: 720,
+    height: 560,
+    async render() {
+      const root = el('div', { className: 'chat-app' });
+
+      if (!await PROXY.backendAvailable()) {
+        root.append(emptyState(
+          'Chat needs the Node server.<br>Start the site with <code>npm start</code> ' +
+          '(or deploy it to a Node host) instead of opening the files directly.'
+        ));
+        return root;
+      }
+
+      const name = el('input', {
+        className: 'field',
+        type: 'text',
+        placeholder: 'Your name',
+        value: store.get('chatName', '')
+      });
+      const room = el('input', {
+        className: 'field',
+        type: 'text',
+        placeholder: 'Room name',
+        value: store.get('chatRoom', '')
+      });
+      const join = el('button', { className: 'btn tab', type: 'button', textContent: 'Join' });
+      const status = el('span', { className: 'count', textContent: 'Not connected' });
+      const bar = el('div', { className: 'toolbar' }, [name, room, join, status]);
+
+      const log = el('div', { className: 'chat-log' });
+      const text = el('input', { className: 'field', type: 'text', placeholder: 'Message', disabled: true });
+      const send = el('button', { className: 'btn tab', type: 'button', textContent: 'Send', disabled: true });
+      const composer = el('div', { className: 'toolbar' }, [text, send]);
+
+      let socket = null;
+
+      const line = (className, body) => {
+        const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 40;
+        log.append(el('div', { className, innerHTML: body }));
+        if (atBottom) log.scrollTop = log.scrollHeight;
+      };
+
+      const escape = value =>
+        value.replace(/[&<>"']/g, char =>
+          ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+
+      const message = data => line('chat-line', `<b>${escape(data.name)}</b> ${escape(data.text)}`);
+
+      const connect = () => {
+        if (!name.value.trim() || !room.value.trim()) return;
+        store.set('chatName', name.value.trim());
+        store.set('chatRoom', room.value.trim());
+        if (socket) socket.close();
+
+        status.textContent = 'Connecting…';
+        socket = new WebSocket(
+          `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/chat`
+        );
+
+        socket.addEventListener('open', () => {
+          socket.send(JSON.stringify({ type: 'join', room: room.value.trim(), name: name.value.trim() }));
+        });
+
+        socket.addEventListener('message', event => {
+          const data = JSON.parse(event.data);
+          if (data.type === 'joined') {
+            log.replaceChildren();
+            data.history.forEach(message);
+            status.textContent = `In #${data.room}`;
+            text.disabled = send.disabled = false;
+            text.focus();
+          } else if (data.type === 'message') {
+            message(data);
+          } else if (data.type === 'presence') {
+            line('chat-line system', `${escape(data.text)} · ${data.users.length} here`);
+          } else if (data.type === 'error') {
+            status.textContent = data.text;
+          }
+        });
+
+        socket.addEventListener('close', () => {
+          status.textContent = 'Disconnected';
+          text.disabled = send.disabled = true;
+        });
+      };
+
+      const post = () => {
+        if (!text.value.trim() || socket?.readyState !== WebSocket.OPEN) return;
+        socket.send(JSON.stringify({ type: 'message', text: text.value }));
+        text.value = '';
+      };
+
+      join.addEventListener('click', connect);
+      room.addEventListener('keydown', event => { if (event.key === 'Enter') connect(); });
+      send.addEventListener('click', post);
+      text.addEventListener('keydown', event => { if (event.key === 'Enter') post(); });
+
+      root.append(bar, log, composer);
+      return root;
+    }
+  },
+
   panic: {
     title: 'Panic — close this tab',
     glyph: '🛑',

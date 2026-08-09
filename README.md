@@ -24,6 +24,7 @@ The UI also works from any static host (`python3 -m http.server`), just without 
 | Music | three Google Drive folders + a built-in audio player |
 | Blooket | https://blooketbot.schoolcheats.net/ |
 | Proxy | Ultraviolet + Wisp, served by `server.js` |
+| Chat | rooms over WebSockets (`chat.js`), no account needed |
 | Panic | closes the tab, or navigates to the panic URL if the browser refuses |
 | Settings | wallpaper URL, clock format, panic URL — saved in `localStorage` |
 
@@ -40,6 +41,12 @@ blooketbot.schoolcheats.net) cannot be
 embedded in an iframe by any page. Those windows show a launch card that opens the site in a new tab —
 plus an "Open here through the proxy" button when the backend is running, since Ultraviolet strips those
 headers. The rest render inline. Mark one in `js/apps.js` with `embeddable: false`.
+
+## Chat
+
+`chat.js` keeps rooms in memory: pick a name and a room, and everyone typing the same room name
+lands in the same conversation. The last 50 messages per room are replayed on join and rooms disappear
+when the last person leaves — nothing is written to disk.
 
 ## Proxy
 
