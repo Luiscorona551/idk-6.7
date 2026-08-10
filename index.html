@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control Interface</title>
+    <title>idk 6.7</title>
     <style>
         * {
             margin: 0;
@@ -13,27 +13,70 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(180deg, #0a0e27 0%, #1a1a3e 50%, #0d1b2a 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Night sky stars effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, white, rgba(255,255,255,.2)),
+                radial-gradient(2px 2px at 60px 70px, white, rgba(255,255,255,.2)),
+                radial-gradient(1px 1px at 50px 50px, white, rgba(255,255,255,.2)),
+                radial-gradient(1px 1px at 130px 80px, white, rgba(255,255,255,.2)),
+                radial-gradient(2px 2px at 90px 10px, white, rgba(255,255,255,.2));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            animation: twinkle 5s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
 
         .container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            background: rgba(20, 20, 40, 0.8);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(102, 126, 234, 0.2);
             padding: 40px;
             text-align: center;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
+            position: relative;
+            z-index: 10;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .image-container {
+            margin-bottom: 30px;
+        }
+
+        .image-container img {
+            max-width: 300px;
+            width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
         }
 
         h1 {
-            color: #333;
+            color: #667eea;
             margin-bottom: 30px;
-            font-size: 28px;
+            font-size: 32px;
+            text-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
         }
 
         .button-group {
@@ -90,7 +133,11 @@
 </head>
 <body>
     <div class="container">
-        <h1>Control Panel</h1>
+        <div class="image-container">
+            <img src="https://kommodo.ai/i/TNl5LFk8GJtSpPcnKbnV" alt="idk 6.7">
+        </div>
+
+        <h1>idk 6.7</h1>
         
         <div class="button-group">
             <button class="btn-primary">
@@ -110,10 +157,20 @@
         </div>
     </div>
 
+    <audio id="shutdownSound" preload="auto">
+        <source src="https://www.myinstants.com/media/sounds/windows-98-shutdown-sound.mp3" type="audio/mpeg">
+    </audio>
+
     <script>
-        // Power off button - closes the tab
+        // Power off button - plays shutdown sound and closes the tab
         document.getElementById('powerBtn').addEventListener('click', function() {
-            window.close();
+            const audio = document.getElementById('shutdownSound');
+            audio.play();
+            
+            // Close the tab after the sound plays (approximately 2 seconds)
+            setTimeout(function() {
+                window.close();
+            }, 2000);
         });
     </script>
 </body>
