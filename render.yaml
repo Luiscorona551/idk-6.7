@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: ugs-desktop
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      # Keeps setup sessions valid across restarts.
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SETUP_KEY
+        sync: false

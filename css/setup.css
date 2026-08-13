@@ -1,0 +1,92 @@
+body.setup, html {
+  margin: 0; padding: 0;
+  height: 100vh; width: 100vw;
+  overflow: hidden; background-color: #000;
+  font-family: "Tahoma", sans-serif;
+  color: white;
+}
+
+#click-overlay {
+  position: fixed; inset: 0;
+  background: #000; z-index: 999;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+}
+
+#click-overlay img { max-width: 250px; margin-bottom: 20px; border-radius: 12px; }
+
+#install-now-btn {
+  padding: 15px 40px; font-size: 20px; font-weight: bold;
+  background: #28a745; color: white; border: none; cursor: pointer;
+  border-radius: 5px; box-shadow: 0 4px 10px rgba(0, 0, 0, .3);
+}
+
+.screen {
+  display: none; height: 100vh; width: 100vw;
+  flex-direction: column; position: absolute; top: 0; left: 0;
+  box-sizing: border-box;
+}
+
+.show { display: flex !important; }
+.hide { display: none !important; }
+
+.setup-bg { background: linear-gradient(to bottom, #4a7ac9, #33599e); padding: 40px 60px; }
+.setup-h1 { font-size: 26px; font-weight: normal; margin: 0 0 6px; }
+.setup-p { margin: 0 0 24px; font-size: 13px; }
+
+.input-group { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.input-group label { width: 130px; font-size: 13px; }
+.input-group input, .input-group select, #key-field {
+  padding: 5px; border: 1px solid #999; font-family: inherit; font-size: 13px;
+}
+#key-field { width: 250px; }
+#error-text { color: #ffff00; display: none; margin-top: 10px; font-size: 13px; }
+
+/* LOADING BAR STYLES */
+.loader-frame {
+  border: 1.5px solid #7a7a7a; padding: 2px;
+  width: 180px; height: 14px; margin-top: 30px;
+  position: relative; overflow: hidden;
+}
+
+.block-container { display: flex; gap: 3px; position: absolute; animation: move 2s infinite linear; }
+
+.block {
+  width: 8px; height: 10px;
+  background: linear-gradient(to bottom, #285ed6, #73a2ff, #285ed6);
+}
+
+@keyframes move { 0% { left: -50px; } 100% { left: 190px; } }
+
+/* BUTTONS AND TEXT */
+.help-icon {
+  position: absolute; bottom: 20px; left: 30px;
+  display: flex; flex-direction: column; align-items: center;
+  font-size: 11px; cursor: pointer; border: none; background: none; color: white;
+  z-index: 500;
+}
+
+.help-circle {
+  width: 35px; height: 35px; background: #fff; border-radius: 50%;
+  color: #33599e; display: flex; justify-content: center; align-items: center;
+  font-size: 22px; font-weight: bold; margin-bottom: 4px;
+}
+
+.win-btn {
+  position: absolute; bottom: 100px; right: 30px;
+  background: #eee; color: black; border: 1px solid #999;
+  padding: 4px 20px; cursor: pointer; font-family: inherit;
+}
+
+#startup-screen { justify-content: center; align-items: center; }
+.logo-main { font-size: 40px; font-weight: bold; }
+.logo-main span { color: #ff5a00; font-style: italic; }
+
+#welcome-screen {
+  background: linear-gradient(to bottom, #3a97ff, #b5e3ff);
+  justify-content: center; align-items: center;
+}
+.welcome-logo {
+  width: 140px; height: 140px; border-radius: 12px; object-fit: cover;
+  box-shadow: 0 0 30px rgba(255, 255, 255, .8);
+}
+#welcome-screen h2 { margin-top: 20px; text-shadow: 0 2px 4px rgba(0, 0, 0, .3); }

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>IDK 6.7 Setup</title>
+<link rel="icon" href="assets/ugs-icon.jpeg">
+<link rel="stylesheet" href="css/setup.css">
+</head>
+<body class="setup">
+
+  <div id="click-overlay">
+    <img src="assets/ugs-icon.jpeg" alt="">
+    <button id="install-now-btn" type="button">start now</button>
+  </div>
+
+  <audio id="install-audio" loop>
+    <source src="https://dn721608.ca.archive.org/0/items/windows-xp-complete-soundtrack/Windows%20XP%20-%20Complete%20Soundtrack/FLAC/1-01%20Velkommen%20-%20Stan%20LePard.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="welcome-audio" src="https://www.myinstants.com/media/sounds/windows-98.mp3"></audio>
+
+  <div id="startup-screen" class="screen">
+    <div class="logo-main">IDK<span>6.7</span></div>
+    <div class="loader-frame">
+      <div class="block-container">
+        <div class="block"></div>
+        <div class="block"></div>
+        <div class="block"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="setup1" class="screen setup-bg">
+    <h1 class="setup-h1">Ready to register?</h1>
+    <p class="setup-p">Registering helps us keep this site secure.</p>
+    <label><input type="radio" name="r" id="reg-yes" checked> Yes, I'd like to register now</label><br><br>
+    <label><input type="radio" name="r" id="reg-no"> No, not at this time</label>
+    <button class="win-btn" id="reg-next" type="button">Next</button>
+  </div>
+
+  <div id="setup2" class="screen setup-bg">
+    <h1 class="setup-h1">Who will use this site?</h1>
+    <p class="setup-p">Type the name of each account who will use this site.</p>
+    <div class="input-group"><label>Your name:</label><input type="text" id="account-name"></div>
+    <div class="input-group"><label>2nd Acc:</label><input type="text"></div>
+    <div class="input-group"><label>3rd Acc:</label><input type="text"></div>
+    <div class="input-group"><label>4th Acc:</label><input type="text"></div>
+    <div class="input-group"><label>5th Acc:</label><input type="text"></div>
+    <button class="win-btn" id="accounts-next" type="button">Next</button>
+  </div>
+
+  <div id="setup3" class="screen setup-bg" style="background: #1e005d;">
+    <h1 class="setup-h1">Enter a product key</h1>
+    <p class="setup-p">Contact the owner for the product key.</p>
+    <input type="text" id="key-field" placeholder="IDK67-PRO-XXXX" autocomplete="off">
+    <p id="error-text">Invalid key.</p>
+    <button class="win-btn" id="key-next" type="button">Next</button>
+  </div>
+
+  <div id="setup4" class="screen setup-bg">
+    <h1 class="setup-h1">Congratulations!</h1>
+    <p class="setup-p">Setup is complete. Access your desktop below.</p>
+    <button class="win-btn" id="finish-btn" type="button">Finish</button>
+  </div>
+
+  <div id="region-screen" class="screen setup-bg">
+    <h1 class="setup-h1" id="region-title">Select Region and State</h1>
+    <p class="setup-p" id="region-desc">Choose your location to set the language.</p>
+    <div class="input-group">
+      <label id="region-label">Region:</label>
+      <select id="region-select">
+        <option value="US">United States</option>
+        <option value="ES">Spain</option>
+        <option value="FR">France</option>
+        <option value="DE">Germany</option>
+        <option value="JP">Japan</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label id="state-label">State / Province:</label>
+      <input type="text" id="state-input" placeholder="Enter state">
+    </div>
+    <button class="win-btn" id="region-btn" type="button">Next</button>
+  </div>
+
+  <div id="welcome-screen" class="screen">
+    <img src="assets/ugs-icon.jpeg" class="welcome-logo" alt="">
+    <h2>Idk 6.7</h2>
+  </div>
+
+  <button id="help-ui" class="help-icon hide" type="button">
+    <div class="help-circle">?</div>
+    For help,<br>click here.
+  </button>
+
+  <script src="js/setup.js"></script>
+</body>
+</html>
